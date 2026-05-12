@@ -78,8 +78,8 @@ window.onload = () => {
 
         if (!engineOn) return;
 
-        if (e.deltaY < 0) targetRPM += 300;
-        else targetRPM -= 300;
+        if (e.deltaY < 0) targetRPM += 30;
+        else targetRPM -= 30;
 
         targetRPM = Math.max(0, Math.min(5001, targetRPM));
 
@@ -94,8 +94,8 @@ window.onload = () => {
 
         if (!engineOn) return;
 
-        if (e.key === "ArrowUp") targetRPM += 400;
-        if (e.key === "ArrowDown") targetRPM -= 400;
+        if (e.key === "ArrowUp") targetRPM += 40;
+        if (e.key === "ArrowDown") targetRPM -= 40;
 
         if (e.key === "ArrowLeft") {
             leftOn = !leftOn;

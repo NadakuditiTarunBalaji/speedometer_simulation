@@ -53,9 +53,14 @@ async def can_receiver():
         await asyncio.sleep(0.01)
 
 
-@app.on_event("startup")
-async def startup():
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     asyncio.create_task(can_receiver())
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 
 # -------------------------------

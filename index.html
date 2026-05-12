@@ -57,6 +57,12 @@
     font-size: 12px;
     color: #aaa;
   }
+
+  button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    cursor: pointer;
+  }
 </style>
 </head>
 
@@ -65,11 +71,14 @@
 <h2>Digital Speedometer Cluster</h2>
 
 <div class="cluster">
+
+  <!-- SPEED -->
   <div>
     <canvas id="speedo" width="250" height="250"></canvas>
     <div class="label">Speed (km/h)</div>
   </div>
 
+  <!-- RPM -->
   <div>
     <canvas id="rpm" width="250" height="250"></canvas>
     <div class="label">RPM</div>
@@ -78,27 +87,40 @@
       <div id="rpmBar" style="height:10px; width:0%; background:red; border-radius:5px;"></div>
     </div>
   </div>
+
 </div>
 
-<div id="leftContainer">
-  <div id="left" class="light"></div>
-  <div class="label">Left</div>
-</div>
+<!-- INDICATORS -->
+<div class="indicators">
 
-<div id="engineContainer">
-  <div id="engine" class="light engine"></div>
-  <div class="label">Engine</div>
-</div>
+  <div>
+    <div id="left" class="light"></div>
+    <div class="label">Left</div>
+  </div>
 
-<div id="rightContainer">
-  <div id="right" class="light"></div>
-  <div class="label">Right</div>
-</div>
-<div id="EgineON">
-    <div id="engineON" class="light engine"></div>
+  <div>
+    <div id="engine" class="light engine"></div>
     <div class="label">Engine</div>
-    <button id="engineBtn" type="button" onclick="toggleEngine()">Turn Engine On</button>
-    <div id="engineWarning" style="margin-top:10px; color: orange; font-size: 16px; text-align: center;">Turn on engine</div>
+  </div>
+
+  <div>
+    <div id="right" class="light"></div>
+    <div class="label">Right</div>
+  </div>
+
+</div>
+
+<!-- ENGINE CONTROL -->
+<div style="margin-top: 30px; text-align:center;">
+
+  <div id="engineWarning" style="color: orange; margin-bottom:10px;">
+    Turn on engine
+  </div>
+
+  <button id="engineBtn" type="button" onclick="toggleEngine()">
+    Turn Engine On
+  </button>
+
 </div>
 
 <script src="script.js"></script>

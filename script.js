@@ -12,67 +12,91 @@ window.onload = () => {
     let speed = 0;
     let targetRPM = 0;
 
-    // ✅ indicator state (FIXED POSITION)
+    let engineOn = false;
     let leftOn = false;
     let rightOn = false;
-    let engineOn = false;
 
     const engineBtn = document.getElementById("engineBtn");
     const engineWarning = document.getElementById("engineWarning");
 
+    // -------------------------------
+    // ENGINE TOGGLE (FIXED STABLE)
+    // -------------------------------
     window.toggleEngine = () => {
+
         engineOn = !engineOn;
-        engineBtn.textContent = engineOn ? "Turn Engine Off" : "Turn Engine On";
-        engineWarning.textContent = engineOn ? "" : "Turn on engine";
-        document.getElementById("engineON").classList.toggle("active", engineOn);
+
+        engineBtn.textContent = engineOn
+            ? "Turn Engine Off"
+            : "Turn Engine On";
+
+        engineWarning.textContent = engineOn
+            ? ""
+            : "Turn on engine";
+
+        document.getElementById("engineON")
+            .classList.toggle("active", engineOn);
+
+        sendToServer();
     };
 
     engineWarning.textContent = "Turn on engine";
 
-    // WebSocket connection
-    const ws = new WebSocket('ws://localhost:8000/ws');
-    ws.onopen = () => console.log('Connected to server');
+    // -------------------------------
+    // WEBSOCKET
+    // -------------------------------
+    const ws = new WebSocket("ws://localhost:8000/ws");
+
+    ws.onopen = () => console.log("Connected to server");
+
     ws.onmessage = (event) => {
+
         try {
             const data = JSON.parse(event.data);
-            if (data.engineOn !== undefined) {
-                engineOn = data.engineOn;
-                engineBtn.textContent = engineOn ? "Turn Engine Off" : "Turn Engine On";
-                document.getElementById("engineON").classList.toggle("active", engineOn);
-                engineWarning.textContent = engineOn ? "" : "Turn on engine";
-            }
+
+            // ONLY UPDATE SENSOR DATA (NOT ENGINE STATE)
             if (data.speed !== undefined) {
-                speed = data.speed;  // Update speed from server
+                speed = data.speed;
             }
+
+            if (data.rpm !== undefined) {
+                rpm = data.rpm;
+            }
+
         } catch (e) {
-            console.error('Error parsing message:', e);
+            console.error("WS error:", e);
         }
     };
-    ws.onerror = (error) => console.error('WebSocket error:', error);
 
-    // 🎮 SCROLL CONTROL
+    ws.onerror = (err) => console.error("WebSocket error:", err);
+
+    // -------------------------------
+    // INPUT CONTROL
+    // -------------------------------
     window.addEventListener("wheel", (e) => {
         e.preventDefault();
+
+        if (!engineOn) return;
 
         if (e.deltaY < 0) targetRPM += 300;
         else targetRPM -= 300;
 
         targetRPM = Math.max(0, Math.min(5001, targetRPM));
+
+        sendToServer();
     }, { passive: false });
 
-    // 🎮 KEYBOARD CONTROL (RPM + INDICATORS)
     window.addEventListener("keydown", (e) => {
 
-        // prevent page scrolling
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
             e.preventDefault();
         }
 
-        // RPM control
+        if (!engineOn) return;
+
         if (e.key === "ArrowUp") targetRPM += 400;
         if (e.key === "ArrowDown") targetRPM -= 400;
 
-        // indicator control
         if (e.key === "ArrowLeft") {
             leftOn = !leftOn;
             rightOn = false;
@@ -84,23 +108,40 @@ window.onload = () => {
         }
 
         targetRPM = Math.max(0, Math.min(5001, targetRPM));
+
+        sendToServer();
     });
 
+    // -------------------------------
+    // SEND TO SERVER (ONLY WHEN NEEDED)
+    // -------------------------------
+    function sendToServer() {
+
+        if (ws.readyState !== WebSocket.OPEN) return;
+
+        ws.send(JSON.stringify({
+            engineOn: engineOn,
+            rpm: engineOn ? Math.floor(targetRPM) : 0
+        }));
+    }
+
+    // -------------------------------
+    // GAUGE DRAW
+    // -------------------------------
     function drawGauge(ctx, value, max, color) {
+
         const w = 250, h = 250;
         const cx = w / 2, cy = h / 2;
         const radius = 100;
 
         ctx.clearRect(0, 0, w, h);
 
-        // background arc
         ctx.beginPath();
         ctx.strokeStyle = "#333";
         ctx.lineWidth = 20;
         ctx.arc(cx, cy, radius, Math.PI, 2 * Math.PI);
         ctx.stroke();
 
-        // active arc
         const angle = Math.PI + (value / max) * Math.PI;
 
         ctx.beginPath();
@@ -109,14 +150,15 @@ window.onload = () => {
         ctx.arc(cx, cy, radius, Math.PI, angle);
         ctx.stroke();
 
-        // text
         ctx.fillStyle = "white";
         ctx.font = "20px Arial";
         ctx.textAlign = "center";
         ctx.fillText(Math.floor(value), cx, cy + 10);
     }
 
-    // physics
+    // -------------------------------
+    // MAIN LOOP
+    // -------------------------------
     const engineResponse = 0.08;
     const drag = 0.985;
 
@@ -126,54 +168,36 @@ window.onload = () => {
             targetRPM = 0;
         }
 
-        // smooth RPM
         rpm += (targetRPM - rpm) * engineResponse;
+
         if (targetRPM === 0) rpm *= drag;
 
         const displayRPM = engineOn ? rpm : 0;
-        const displaySpeed = engineOn ? speed : 0;
+        const displaySpeed = speed;
 
-        // draw gauges
         drawGauge(sctx, displaySpeed, 140, "#00ffcc");
         drawGauge(rctx, displayRPM, 5001, "#ff5555");
 
-        // RPM bar
-        const pct = (displayRPM / 5001) * 100;
-        rpmBar.style.width = pct + "%";
+        rpmBar.style.width = (displayRPM / 5001) * 100 + "%";
 
         rpmBar.style.background =
             displayRPM > 6500
                 ? (Math.sin(Date.now() / 80) > 0 ? "orange" : "red")
                 : "red";
 
-        // ✅ indicator blinking (FIXED)
         const blink = Math.floor(Date.now() / 400) % 2 === 0;
 
-        document.getElementById("left").classList.toggle(
-            "active",
-            leftOn && blink
-        );
+        document.getElementById("left")
+            .classList.toggle("active", leftOn && blink);
 
-        document.getElementById("right").classList.toggle(
-            "active",
-            rightOn && blink
-        );
+        document.getElementById("right")
+            .classList.toggle("active", rightOn && blink);
 
         document.getElementById("engine")
             .classList.toggle("active", engineOn);
 
-        // Send data to server only when engine is on
-        if (ws.readyState === WebSocket.OPEN) {
-            const payload = { engineOn };
-            if (engineOn) {
-                payload.rpm = Math.floor(displayRPM);
-            }
-            ws.send(JSON.stringify(payload));
-        }
-
         requestAnimationFrame(update);
     }
-    
 
     update();
 };

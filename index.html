@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Speedometer Cluster</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #0b0f14;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .cluster {
+    display: flex;
+    gap: 40px;
+    margin-top: 30px;
+  }
+
+  canvas {
+    background: #2e4767;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(153, 18, 18, 0.6);
+  }
+
+  .indicators {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+  }
+
+  .light {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #222;
+    box-shadow: inset 0 0 10px #000;
+  }
+
+  .active {
+    background: yellow;
+    box-shadow: 0 0 15px yellow;
+  }
+
+  .engine {
+    background: red;
+  }
+
+  .label {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #aaa;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Digital Speedometer Cluster</h2>
+
+<div class="cluster">
+  <div>
+    <canvas id="speedo" width="250" height="250"></canvas>
+    <div class="label">Speed (km/h)</div>
+  </div>
+
+  <div>
+    <canvas id="rpm" width="250" height="250"></canvas>
+    <div class="label">RPM</div>
+
+    <div style="margin-top:10px; width:250px; height:10px; background:#222; border-radius:5px;">
+      <div id="rpmBar" style="height:10px; width:0%; background:red; border-radius:5px;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="leftContainer">
+  <div id="left" class="light"></div>
+  <div class="label">Left</div>
+</div>
+
+<div id="engineContainer">
+  <div id="engine" class="light engine"></div>
+  <div class="label">Engine</div>
+</div>
+
+<div id="rightContainer">
+  <div id="right" class="light"></div>
+  <div class="label">Right</div>
+</div>
+<div id="EgineON">
+    <div id="engineON" class="light engine"></div>
+    <div class="label">Engine</div>
+    <button id="engineBtn" type="button" onclick="toggleEngine()">Turn Engine On</button>
+    <div id="engineWarning" style="margin-top:10px; color: orange; font-size: 16px; text-align: center;">Turn on engine</div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
